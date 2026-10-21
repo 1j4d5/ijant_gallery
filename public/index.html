@@ -1,0 +1,80 @@
+<!doctype html><html lang="en"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>IJANT Gallery</title>
+<link rel="stylesheet" href="/shared.css">
+<style>
+.hero { text-align:center; padding:80px 24px 60px; }
+.hero h1 { font-size:clamp(36px,7vw,72px); font-weight:800; letter-spacing:-2px; margin:0 0 18px;
+  background:linear-gradient(135deg,#f5f7fb 30%,var(--accent)); -webkit-background-clip:text;
+  -webkit-text-fill-color:transparent; background-clip:text; }
+.hero p { font-size:clamp(16px,2vw,20px); color:var(--muted); max-width:520px; margin:0 auto 36px; }
+.hero-actions { display:flex; gap:14px; justify-content:center; flex-wrap:wrap; }
+.stats { display:grid; grid-template-columns:repeat(auto-fit,minmax(160px,1fr)); gap:18px; max-width:620px; margin:56px auto 0; }
+.stat { background:var(--card); border:1px solid var(--line); border-radius:18px; padding:26px 22px; text-align:center; }
+.stat-n { font-size:clamp(34px,5vw,52px); font-weight:800; color:var(--accent); line-height:1; display:block; }
+.stat-l { color:var(--muted); font-size:14px; margin-top:6px; display:block; }
+.features { display:grid; grid-template-columns:repeat(auto-fit,minmax(230px,1fr)); gap:18px; margin:44px 0 0; }
+.feature { background:var(--card); border:1px solid var(--line); border-radius:16px; padding:24px 20px;
+  transition:border-color .15s, transform .15s; }
+.feature:hover { border-color:var(--accent); transform:translateY(-2px); }
+.feature-icon { font-size:28px; margin-bottom:10px; }
+.feature h3 { margin:0 0 8px; font-size:16px; }
+.feature p { margin:0; color:var(--muted); font-size:14px; line-height:1.6; }
+.sec-hdr { margin:48px 0 20px; }
+.sec-hdr h2 { font-size:22px; margin:0 0 4px; }
+.sec-hdr p { color:var(--muted); font-size:14px; margin:0; }
+</style></head><body>
+<header><div class="header-bar">
+  <a href="/" class="logo">IJANT <span>Gallery</span></a>
+  <nav>
+    <a class="nav-link active" href="/">Home</a>
+    <a class="nav-link" href="/people">People</a>
+    <a class="nav-link" href="/images">Images</a>
+  </nav>
+</div></header>
+<main>
+<div class="hero">
+  <h1>IJANT Gallery</h1>
+  <p>Explore people and photos from the IJANT archive.<br><small style="font-size:13px;color:var(--muted)">powered by ijads pink computing unit</small></p>
+  <div class="hero-actions">
+    <a class="btn btn-accent" href="/people">People</a>
+    <a class="btn" href="/images">All Images</a>
+  </div>
+  <div class="stats">
+    <div class="stat"><span class="stat-n" id="sP">-</span><span class="stat-l">People</span></div>
+    <div class="stat"><span class="stat-n" id="sI">-</span><span class="stat-l">Photos</span></div>
+    <div class="stat"><span class="stat-n" id="sF">-</span><span class="stat-l">Face Tags</span></div>
+  </div>
+</div>
+<div class="sec-hdr"><h2>Browse the archive</h2></div>
+<div class="features">
+  <a class="feature" href="/people">
+    <div class="feature-icon">&#128101;</div>
+    <h3>People</h3>
+    <p>Browse every person in the archive with their cover photo and photo count.</p>
+  </a>
+  <a class="feature" href="/images">
+    <div class="feature-icon">&#128247;</div>
+    <h3>All Images</h3>
+    <p>Scroll through every photo in the collection. Click to view full screen.</p>
+  </a>
+  <div class="feature">
+    <div class="feature-icon">&#128250;</div>
+    <h3>Face Detection HUD</h3>
+    <p>Green bounding boxes highlight detected faces. Toggle on/off inside any photo viewer.</p>
+  </div>
+</div>
+</main>
+<script src="/shared.js"></script>
+<script>
+(async()=>{
+  try{
+    const r=await fetch('/api/stats');const d=await r.json();
+    if(d.ok){
+      document.getElementById('sP').textContent=d.data.people.toLocaleString();
+      document.getElementById('sI').textContent=d.data.images.toLocaleString();
+      document.getElementById('sF').textContent=d.data.face_boxes.toLocaleString();
+    }
+  }catch(e){}
+})();
+</script></body></html>

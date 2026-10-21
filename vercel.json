@@ -1,0 +1,63 @@
+{
+  "version": 2,
+  "builds": [
+    {
+      "src": "ijant-gallery/api/**/*.js",
+      "use": "@vercel/node"
+    },
+    {
+      "src": "ijant-gallery/public/**",
+      "use": "@vercel/static"
+    }
+  ],
+  "routes": [
+    {
+      "src": "/",
+      "dest": "/ijant-gallery/public/index.html"
+    },
+    {
+      "src": "/people",
+      "dest": "/ijant-gallery/public/people.html"
+    },
+    {
+      "src": "/people/(\\d+)",
+      "dest": "/ijant-gallery/public/person.html"
+    },
+    {
+      "src": "/images",
+      "dest": "/ijant-gallery/public/images.html"
+    },
+    {
+      "src": "/shared.css",
+      "dest": "/ijant-gallery/public/shared.css"
+    },
+    {
+      "src": "/shared.js",
+      "dest": "/ijant-gallery/public/shared.js"
+    },
+    {
+      "src": "/api/stats",
+      "dest": "/ijant-gallery/api/stats.js"
+    },
+    {
+      "src": "/api/refresh",
+      "dest": "/ijant-gallery/api/refresh.js"
+    },
+    {
+      "src": "/api/images",
+      "dest": "/ijant-gallery/api/images.js"
+    },
+    {
+      "src": "/api/(?:public/)?people",
+      "dest": "/ijant-gallery/api/people/index.js"
+    },
+    {
+      "src": "/api/(?:public/)?people/(\\d+)",
+      "dest": "/ijant-gallery/api/people/[id].js?id=$1"
+    },
+    {
+      "src": "/(?:public-)?photo/(\\d+)",
+      "dest": "/ijant-gallery/api/photo/[id].js?id=$1"
+    }
+  ]
+}

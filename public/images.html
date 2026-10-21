@@ -1,0 +1,469 @@
+<!doctype html><html lang="en"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>All Images - IJANT Gallery</title>
+<link rel="stylesheet" href="/shared.css">
+<style>
+.img-layout { display:grid; grid-template-columns:1fr 300px; gap:20px; align-items:start; }
+@media(max-width:900px){ .img-layout{ grid-template-columns:1fr; } .side-panel{ display:none!important; } }
+.masonry { display:grid; grid-template-columns:repeat(auto-fill,minmax(180px,1fr)); gap:10px; }
+.skel-grid { grid-template-columns:repeat(auto-fill,minmax(180px,1fr)); gap:10px; }
+@media(max-width:500px){ .masonry,.skel-grid{ grid-template-columns:repeat(2,1fr); gap:7px; } }
+
+.img-wrap { position:relative; }
+.img-card { border:1px solid var(--line); border-radius:10px; overflow:hidden; background:#161b25;
+  cursor:zoom-in; transition:transform .15s,border-color .15s; display:block; padding:0; width:100%; color:inherit; }
+.img-card:hover { transform:translateY(-2px); border-color:var(--accent); }
+.img-card img { width:100%; aspect-ratio:1; object-fit:contain; display:block; background:#10141d; }
+.img-label { padding:6px 10px; font-size:12px; color:var(--muted); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.load-more { text-align:center; margin-top:30px; }
+.thumb-fbox { position:absolute; border:1.5px solid var(--accent);
+  box-shadow:0 0 0 1px rgba(0,0,0,.6),0 0 8px rgba(169,243,107,.5);
+  border-radius:2px; pointer-events:none; z-index:10; display:none; }
+.img-wrap.boxes-on .thumb-fbox { display:block; }
+.thumb-fbox::after { content:attr(data-name); position:absolute; bottom:calc(100% + 2px); left:0;
+  background:rgba(10,12,16,.92); color:var(--accent); font-size:9px; font-weight:600;
+  padding:1px 5px; border-radius:3px; white-space:nowrap; pointer-events:none; }
+.grid-toolbar { display:flex; justify-content:flex-end; margin-bottom:10px; }
+#thumbTogBtn { background:var(--card); border:1px solid var(--line); color:inherit;
+  border-radius:8px; padding:6px 14px; font-size:13px; cursor:pointer; transition:all .15s; }
+#thumbTogBtn:hover { border-color:var(--accent); color:var(--accent); }
+#thumbTogBtn.on { border-color:var(--accent); color:var(--accent); background:rgba(169,243,107,.08); }
+
+.hover-pop {
+  position:absolute; bottom:calc(100% + 8px); left:50%; transform:translateX(-50%);
+  background:rgba(10,13,20,.97); border:1px solid var(--line); border-radius:10px;
+  padding:10px 12px; min-width:140px; max-width:220px; z-index:60;
+  box-shadow:0 8px 24px rgba(0,0,0,.6); pointer-events:none;
+  opacity:0; transition:opacity .15s; white-space:nowrap;
+}
+.img-wrap:hover .hover-pop { opacity:1; pointer-events:auto; }
+.hover-pop-title { font-size:11px; color:var(--muted); margin-bottom:6px; letter-spacing:.05em; text-transform:uppercase; }
+.hover-pop-person { display:flex; align-items:center; gap:7px; padding:3px 0; font-size:13px; font-weight:500; }
+.hover-pop-dot { width:7px; height:7px; border-radius:50%; background:var(--accent); flex-shrink:0; }
+.hover-pop-empty { font-size:12px; color:var(--muted); }
+.hover-pop::after { content:''; position:absolute; top:100%; left:50%; transform:translateX(-50%);
+  border:6px solid transparent; border-top-color:var(--line); }
+
+.side-panel { position:sticky; top:80px; background:var(--card); border:1px solid var(--line);
+  border-radius:16px; padding:20px; min-height:200px; }
+.side-panel h3 { margin:0 0 14px; font-size:15px; color:var(--muted); font-weight:500; }
+.side-person { display:flex; align-items:center; gap:10px; padding:9px 0;
+  border-bottom:1px solid var(--line); color:inherit; transition:color .15s; cursor:pointer;
+  background:none; border-left:none; border-right:none; border-top:none; width:100%; text-align:left; }
+.side-person:last-child { border-bottom:none; }
+.side-person:hover { color:var(--accent); }
+.side-person .sp-name { font-size:14px; font-weight:500; }
+.side-empty { color:var(--muted); font-size:14px; padding:20px 0; text-align:center; }
+
+#lb { position:fixed; inset:0; background:rgba(3,4,7,.95); backdrop-filter:blur(10px);
+  z-index:100; display:flex; align-items:center; justify-content:center; padding:70px 70px 55px; user-select:none; }
+#lb.hidden { display:none !important; }
+#vwr { position:relative; display:inline-block; max-width:100%; max-height:100%; line-height:0; }
+#vwr img { max-width:100%; max-height:calc(100vh - 130px); object-fit:contain; display:block;
+  border-radius:6px; box-shadow:0 12px 40px rgba(0,0,0,.8); }
+.fbox { position:absolute; border:2.5px solid var(--accent);
+  box-shadow:0 0 0 1px rgba(0,0,0,.7),0 0 14px rgba(169,243,107,.6);
+  border-radius:3px; cursor:pointer; z-index:50; display:none; }
+.fbox.placed { display:block; }
+.fbox::after { content:attr(data-name); position:absolute; bottom:calc(100% + 4px); left:0;
+  background:rgba(10,12,16,.92); color:var(--accent); font-size:11px; font-weight:600;
+  padding:2px 8px; border-radius:4px; white-space:nowrap; border:1px solid var(--line);
+  opacity:0; transition:opacity .15s; pointer-events:none; }
+.fbox:hover::after { opacity:1; }
+#lb.boxes-off .fbox { display:none !important; }
+.lbc { position:absolute; border:1px solid var(--line); background:rgba(23,27,36,.9);
+  color:white; border-radius:10px; padding:10px 16px; cursor:pointer; font-size:14px;
+  font-weight:500; transition:all .15s; z-index:110; }
+.lbc:hover { border-color:var(--accent); color:var(--accent); }
+#lbClose { top:14px; right:14px; }
+#lbTog { top:14px; right:122px; }
+#lbPrev { left:14px; top:50%; transform:translateY(-50%); font-size:20px; padding:14px 18px; }
+#lbNext { right:14px; top:50%; transform:translateY(-50%); font-size:20px; padding:14px 18px; }
+#lbCnt { position:absolute; bottom:14px; left:50%; transform:translateX(-50%); color:#d3d7e0;
+  font-size:13px; background:rgba(23,27,36,.7); padding:5px 14px; border-radius:20px;
+  border:1px solid var(--line); white-space:nowrap; }
+#lbPeople { position:absolute; right:14px; top:50%; transform:translateY(-50%);
+  background:rgba(13,16,24,.92); border:1px solid var(--line); border-radius:14px;
+  padding:14px 16px; min-width:160px; max-width:220px; max-height:70vh; overflow-y:auto;
+  z-index:115; backdrop-filter:blur(8px); }
+#lbPeople:empty { display:none; }
+#lbPeople:not(:empty) { display:block; }
+#lbPeopleList { display:flex; flex-direction:column; gap:6px; }
+.lb-person { display:flex; align-items:center; gap:8px; background:none; border:none;
+  color:inherit; cursor:pointer; padding:5px 6px; border-radius:8px; width:100%;
+  text-align:left; transition:background .12s; }
+.lb-person:hover { background:rgba(169,243,107,.1); color:var(--accent); }
+.lb-person .lb-pname { font-size:13px; font-weight:500; white-space:nowrap;
+  overflow:hidden; text-overflow:ellipsis; }
+.lb-people-hdr { font-size:10px; text-transform:uppercase; letter-spacing:.08em;
+  color:var(--muted); margin-bottom:6px; }
+@media(max-width:700px){ #lbPeople{ display:none !important; } }
+
+#personModal { position:fixed; inset:0; background:rgba(3,4,7,.92); backdrop-filter:blur(12px);
+  z-index:200; display:flex; align-items:center; justify-content:center; padding:20px; }
+#personModal.hidden { display:none !important; }
+#personModalBox {
+  background:var(--card); border:1px solid var(--line); border-radius:20px;
+  width:min(860px,100%); max-height:85vh; display:flex; flex-direction:column;
+  overflow:hidden; box-shadow:0 24px 60px rgba(0,0,0,.8);
+}
+#personModalHead {
+  display:flex; align-items:center; justify-content:space-between;
+  padding:18px 22px; border-bottom:1px solid var(--line); flex-shrink:0;
+}
+#personModalName { font-size:20px; font-weight:700; margin:0; }
+#personModalCount { color:var(--muted); font-size:14px; }
+#personModalClose { background:none; border:1px solid var(--line); border-radius:8px;
+  color:inherit; padding:6px 14px; cursor:pointer; font-size:13px; transition:all .15s; }
+#personModalClose:hover { border-color:var(--accent); color:var(--accent); }
+#personModalGrid {
+  display:grid; grid-template-columns:repeat(auto-fill,minmax(150px,1fr));
+  gap:10px; padding:18px 22px; overflow-y:auto; flex:1;
+}
+.pm-photo { padding:0; border:1px solid var(--line); background:#161b25; border-radius:10px;
+  overflow:hidden; cursor:zoom-in; transition:transform .15s,border-color .15s; display:block; width:100%; }
+.pm-photo:hover { transform:translateY(-2px); border-color:var(--accent); }
+.pm-photo img { width:100%; aspect-ratio:1; object-fit:contain; display:block; background:#10141d; }
+.pm-loader { padding:40px; text-align:center; color:var(--muted); font-size:14px; grid-column:1/-1; }
+
+@media(max-width:600px){
+  #lb{ padding:54px 0 0; flex-direction:column; }
+  #vwr{ max-width:100vw; max-height:calc(100svh - 110px); width:100%; }
+  #vwr img{ max-height:calc(100svh - 110px); border-radius:0; }
+  #lbPrev{ left:0; padding:18px 14px; border-radius:0 10px 10px 0; }
+  #lbNext{ right:0; padding:18px 14px; border-radius:10px 0 0 10px; }
+  #lbTog{ top:10px; right:90px; padding:7px 10px; font-size:12px; }
+  #lbClose{ top:10px; right:10px; padding:7px 10px; font-size:12px; }
+  #lbPeople{ display:block !important; position:fixed; bottom:0; right:0; left:0; top:auto;
+    transform:none; max-height:32vh; border-radius:16px 16px 0 0; min-width:unset; max-width:100%;
+    padding:10px 16px 20px; overflow-y:auto; }
+  #lbPeopleList{ flex-direction:row; flex-wrap:wrap; gap:10px; }
+  .lb-person{ width:auto; flex-direction:column; align-items:center; padding:6px 8px;
+    border-radius:10px; border:1px solid var(--line); min-width:60px; }
+  .lb-person .lb-pname{ font-size:11px; text-align:center; }
+  #lbCnt{ bottom:calc(32vh + 6px); }
+  .grid-toolbar{ flex-wrap:wrap; gap:6px; }
+  #thumbTogBtn{ font-size:12px; padding:5px 10px; }
+  #personModalBox{ width:100%; max-height:95svh; border-radius:16px 16px 0 0; }
+  #personModal{ align-items:flex-end; padding:0; }
+  #personModalGrid{ grid-template-columns:repeat(auto-fill,minmax(120px,1fr)); padding:12px; }
+}
+</style></head><body>
+<header><div class="header-bar">
+  <a href="/" class="logo">IJANT <span>Gallery</span></a>
+  <nav>
+    <a class="nav-link" href="/">Home</a>
+    <a class="nav-link" href="/people">People</a>
+    <a class="nav-link active" href="/images">Images</a>
+  </nav>
+</div></header>
+<main>
+<div class="page-hdr"><h1>All Images</h1><p id="subtitle"><small>(let ijads pink computing unit process)</small></p></div>
+<div id="skel" class="skel-grid" style="display:grid"><div class="skel"><div class="skel-img" style="aspect-ratio:1"></div></div><div class="skel"><div class="skel-img" style="aspect-ratio:1"></div></div><div class="skel"><div class="skel-img" style="aspect-ratio:1"></div></div><div class="skel"><div class="skel-img" style="aspect-ratio:1"></div></div><div class="skel"><div class="skel-img" style="aspect-ratio:1"></div></div><div class="skel"><div class="skel-img" style="aspect-ratio:1"></div></div><div class="skel"><div class="skel-img" style="aspect-ratio:1"></div></div><div class="skel"><div class="skel-img" style="aspect-ratio:1"></div></div><div class="skel"><div class="skel-img" style="aspect-ratio:1"></div></div><div class="skel"><div class="skel-img" style="aspect-ratio:1"></div></div><div class="skel"><div class="skel-img" style="aspect-ratio:1"></div></div><div class="skel"><div class="skel-img" style="aspect-ratio:1"></div></div><div class="skel"><div class="skel-img" style="aspect-ratio:1"></div></div><div class="skel"><div class="skel-img" style="aspect-ratio:1"></div></div><div class="skel"><div class="skel-img" style="aspect-ratio:1"></div></div><div class="skel"><div class="skel-img" style="aspect-ratio:1"></div></div><div class="skel"><div class="skel-img" style="aspect-ratio:1"></div></div><div class="skel"><div class="skel-img" style="aspect-ratio:1"></div></div><div class="skel"><div class="skel-img" style="aspect-ratio:1"></div></div><div class="skel"><div class="skel-img" style="aspect-ratio:1"></div></div></div>
+<div class="img-layout hidden" id="mainLayout">
+  <div>
+    <div class="grid-toolbar"><button id="thumbTogBtn">&#128100; Show face boxes</button></div>
+    <div id="grid" class="masonry"></div>
+    <div class="load-more"><button class="btn hidden" id="moreBtn">Load more</button></div>
+  </div>
+  <aside class="side-panel" id="sidePanel">
+    <h3>People in image</h3>
+    <div id="sideContent"><div class="side-empty">Hover or click a photo to see who's in it</div></div>
+  </aside>
+</div>
+</main>
+
+<div id="lb" class="hidden" role="dialog" aria-modal="true">
+  <button class="lbc" id="lbClose">&#10005; Close</button>
+  <button class="lbc" id="lbTog">Hide face boxes</button>
+  <button class="lbc" id="lbPrev">&#8592;</button>
+  <div id="vwr"></div>
+  <button class="lbc" id="lbNext">&#8594;</button>
+  <div id="lbCnt"></div>
+  <div id="lbPeople"><div id="lbPeopleList"></div></div>
+</div>
+
+<div id="personModal" class="hidden" role="dialog" aria-modal="true" aria-label="Person gallery">
+  <div id="personModalBox">
+    <div id="personModalHead">
+      <div>
+        <div id="personModalName">Loading...</div>
+        <div id="personModalCount" class="muted"></div>
+      </div>
+      <button id="personModalClose">&#10005; Close</button>
+    </div>
+    <div id="personModalGrid"></div>
+  </div>
+</div>
+
+<script src="/shared.js"></script>
+<script>
+const PAGE=60; let all=[], offset=0, curIdx=0, roObj=null;
+
+function posBoxes(container, img) {
+  if(!container||!img||!img.naturalWidth||!img.naturalHeight) return;
+  const iw=img.clientWidth, ih=img.clientHeight;
+  if(!iw||!ih){ requestAnimationFrame(()=>posBoxes(container,img)); return; }
+  const scale=Math.min(iw/img.naturalWidth, ih/img.naturalHeight);
+  const rw=img.naturalWidth*scale, rh=img.naturalHeight*scale;
+  const ox=(iw-rw)/2, oy=(ih-rh)/2;
+  container.querySelectorAll('.fbox').forEach(b=>{
+    const x1=parseFloat(b.dataset.x1)||0, y1=parseFloat(b.dataset.y1)||0;
+    const x2=parseFloat(b.dataset.x2)||0, y2=parseFloat(b.dataset.y2)||0;
+    b.style.left=(ox+x1*scale)+'px'; b.style.top=(oy+y1*scale)+'px';
+    b.style.width=Math.max(2,(x2-x1)*scale)+'px'; b.style.height=Math.max(2,(y2-y1)*scale)+'px';
+    b.classList.add('placed');
+  });
+}
+
+// Circular avatar that zooms into the person's detected face on their cover photo.
+function faceCropAvatar(p, size) {
+  if (!p.cover_photo_id) {
+    return `<span style="width:${size}px;height:${size}px;border-radius:50%;background:#1c222e;border:2px solid var(--line);display:inline-flex;align-items:center;justify-content:center;font-size:${Math.round(size*0.38)}px;font-weight:700;color:var(--accent);flex-shrink:0">${esc((p.name||'?')[0].toUpperCase())}</span>`;
+  }
+  const hasFace = p.face_x1 != null && p.face_x2 != null && p.face_x2 > p.face_x1;
+  const uid = 'fca-' + p.id + '-' + p.cover_photo_id;
+  const dataAttrs = hasFace
+    ? `data-fx1="${p.face_x1}" data-fy1="${p.face_y1}" data-fx2="${p.face_x2}" data-fy2="${p.face_y2}"`
+    : '';
+  return `<span id="${uid}" style="width:${size}px;height:${size}px;border-radius:50%;overflow:hidden;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0;border:2px solid var(--line);background:#111;position:relative">
+    <img src="${imgUrl(p.cover_photo_id)}" alt="${esc(p.name)}" ${dataAttrs}
+      style="width:100%;height:100%;object-fit:cover;transition:all .15s"
+      onerror="imgRetry(this)" onload="applyFaceCrop(this)">
+  </span>`;
+}
+
+function applyFaceCrop(img) {
+  const x1 = parseFloat(img.dataset.fx1), y1 = parseFloat(img.dataset.fy1);
+  const x2 = parseFloat(img.dataset.fx2), y2 = parseFloat(img.dataset.fy2);
+  if (isNaN(x1) || isNaN(y1) || isNaN(x2) || isNaN(y2) || x2 <= x1 || y2 <= y1) return;
+  const nw = img.naturalWidth, nh = img.naturalHeight;
+  if (!nw || !nh) return;
+  const container = img.parentElement;
+  const cw = container.offsetWidth  || 36;
+  const ch = container.offsetHeight || 36;
+  const fw = x2 - x1, fh = y2 - y1;
+  const pad = 1.4;
+  const scale = Math.min(cw / (fw * pad), ch / (fh * pad));
+  const fcx = ((x1 + x2) / 2) * scale;
+  const fcy = ((y1 + y2) / 2) * scale;
+  img.style.position  = 'absolute';
+  img.style.objectFit = 'unset';
+  img.style.width     = (nw * scale) + 'px';
+  img.style.height    = (nh * scale) + 'px';
+  img.style.left      = (cw / 2 - fcx) + 'px';
+  img.style.top       = (ch / 2 - fcy) + 'px';
+}
+
+function updateSide(imgObj) {
+  const ppl = imgObj ? (imgObj.people || []) : [];
+  const sc = document.getElementById('sideContent');
+  const lbList = document.getElementById('lbPeopleList');
+  if(!ppl.length){
+    sc.innerHTML='<div class="side-empty">No tagged people</div>';
+    lbList.innerHTML='';
+    return;
+  }
+  sc.innerHTML = ppl.map(p=>`
+    <button class="side-person" data-pid="${p.id}" data-name="${esc(p.name)}">
+      ${faceCropAvatar(p, 36)}
+      <span class="sp-name">${esc(p.name)}</span>
+    </button>`).join('');
+  sc.querySelectorAll('.side-person').forEach(btn=>{
+    btn.onclick = () => openPersonModal(Number(btn.dataset.pid), btn.dataset.name);
+  });
+  lbList.innerHTML = '<div class="lb-people-hdr">People in photo</div>' +
+    ppl.map(p=>`
+      <button class="lb-person" data-pid="${p.id}" data-name="${esc(p.name)}">
+        ${faceCropAvatar(p, 38)}
+        <span class="lb-pname">${esc(p.name)}</span>
+      </button>`).join('');
+  lbList.querySelectorAll('.lb-person').forEach(btn=>{
+    btn.onclick = () => openPersonModal(Number(btn.dataset.pid), btn.dataset.name);
+  });
+}
+
+async function openPersonModal(pid, name) {
+  const modal = document.getElementById('personModal');
+  document.getElementById('personModalName').textContent = name;
+  document.getElementById('personModalCount').textContent = '';
+  document.getElementById('personModalGrid').innerHTML = '<div class="pm-loader">(let ijads pink computing unit process)</div>';
+  modal.classList.remove('hidden');
+  document.body.style.overflow = 'hidden';
+  try {
+    const r = await fetch('/api/public/people/' + pid);
+    const d = await r.json();
+    if(!d.ok) throw Error(d.error);
+    const p = d.data;
+    document.getElementById('personModalName').textContent = p.name;
+    document.getElementById('personModalCount').textContent = p.photos.length + ' photo' + (p.photos.length===1?'':'s');
+    if(!p.photos.length){
+      document.getElementById('personModalGrid').innerHTML = '<div class="pm-loader">No photos.</div>';
+      return;
+    }
+    document.getElementById('personModalGrid').innerHTML = p.photos.map((ph,i)=>`
+      <button class="pm-photo" data-i="${i}" data-pid="${pid}">
+        <img loading="lazy" src="${imgUrl(ph.id)}" onerror="imgRetry(this)" alt="Photo ${i+1}">
+      </button>`).join('');
+    document.getElementById('personModalGrid').querySelectorAll('.pm-photo').forEach(btn=>{
+      btn.onclick = () => {
+        closePersonModal();
+        const ph = p.photos[Number(btn.dataset.i)];
+        const globalIdx = all.findIndex(a=>a.id===ph.id);
+        if(globalIdx >= 0) showPhoto(globalIdx);
+      };
+    });
+  } catch(e) {
+    document.getElementById('personModalGrid').innerHTML = '<div class="pm-loader">Error: '+esc(e.message)+'</div>';
+  }
+}
+
+function closePersonModal() {
+  document.getElementById('personModal').classList.add('hidden');
+  // keep scroll locked if the lightbox is still open underneath
+  if (document.getElementById('lb').classList.contains('hidden')) document.body.style.overflow = '';
+}
+
+document.getElementById('personModalClose').onclick = closePersonModal;
+document.getElementById('personModal').onclick = e => {
+  if(e.target === document.getElementById('personModal')) closePersonModal();
+};
+
+function showPhoto(i) {
+  if(!all.length) return;
+  curIdx = ((i%all.length)+all.length)%all.length;
+  const ph = all[curIdx];
+  const boxes = (ph.faces||[]).map(f=>
+    `<div class="fbox" data-x1="${f.x1}" data-y1="${f.y1}" data-x2="${f.x2}" data-y2="${f.y2}" data-name="${esc(f.name||'')}"></div>`
+  ).join('');
+  document.getElementById('vwr').innerHTML=`<img id="lbImg" src="${imgUrl(ph.id)}" onerror="imgRetry(this)" alt="${esc(ph.original_name||'')}">${boxes}`;
+  document.getElementById('lb').classList.remove('hidden');
+  document.body.style.overflow='hidden';
+  const img=document.getElementById('lbImg');
+  const vwr=document.getElementById('vwr');
+  if(roObj){try{roObj.disconnect();}catch(e){} roObj=null;}
+  const place=()=>{ posBoxes(vwr,img); requestAnimationFrame(()=>posBoxes(vwr,img)); };
+  if(img.complete&&img.naturalWidth>0) place();
+  else img.addEventListener('load',place,{once:true});
+  try{ roObj=new ResizeObserver(()=>posBoxes(vwr,img)); roObj.observe(img); }catch(e){}
+  document.getElementById('lbCnt').textContent=(curIdx+1)+' / '+all.length;
+  document.getElementById('lbTog').textContent=document.getElementById('lb').classList.contains('boxes-off')?'Show face boxes':'Hide face boxes';
+  updateSide(ph);
+}
+
+function closePhoto(){
+  if(roObj){try{roObj.disconnect();}catch(e){} roObj=null;}
+  document.getElementById('lb').classList.add('hidden');
+  document.getElementById('vwr').innerHTML='';
+  document.body.style.overflow='';
+}
+
+document.getElementById('lbClose').onclick=closePhoto;
+document.getElementById('lbPrev').onclick=()=>showPhoto(curIdx-1);
+document.getElementById('lbNext').onclick=()=>showPhoto(curIdx+1);
+document.getElementById('lbTog').onclick=()=>{
+  const off=document.getElementById('lb').classList.toggle('boxes-off');
+  document.getElementById('lbTog').textContent=off?'Show face boxes':'Hide face boxes';
+};
+document.getElementById('lb').onclick=e=>{ if(e.target===document.getElementById('lb')) closePhoto(); };
+document.addEventListener('keydown',e=>{
+  const lbHid = document.getElementById('lb').classList.contains('hidden');
+  const pmHid = document.getElementById('personModal').classList.contains('hidden');
+  if(!pmHid && e.key==='Escape'){ closePersonModal(); return; }
+  if(!lbHid){
+    if(e.key==='Escape') closePhoto();
+    if(e.key==='ArrowLeft') showPhoto(curIdx-1);
+    if(e.key==='ArrowRight') showPhoto(curIdx+1);
+  }
+});
+window.addEventListener('resize',()=>{
+  if(!document.getElementById('lb').classList.contains('hidden'))
+    posBoxes(document.getElementById('vwr'),document.getElementById('lbImg'));
+});
+
+function buildHoverPop(imgObj) {
+  const ppl = imgObj.people || [];
+  if(!ppl.length) return '<div class="hover-pop"><div class="hover-pop-empty">No tags</div></div>';
+  const items = ppl.map(p=>`
+    <div class="hover-pop-person">
+      <div class="hover-pop-dot"></div>
+      <span>${esc(p.name)}</span>
+    </div>`).join('');
+  return `<div class="hover-pop"><div class="hover-pop-title">People</div>${items}</div>`;
+}
+
+let thumbBoxesOn = false;
+function applyThumbBoxState() {
+  document.querySelectorAll('.img-wrap').forEach(w => w.classList.toggle('boxes-on', thumbBoxesOn));
+  const btn = document.getElementById('thumbTogBtn');
+  btn.innerHTML = thumbBoxesOn ? '&#128100; Hide face boxes' : '&#128100; Show face boxes';
+  btn.classList.toggle('on', thumbBoxesOn);
+}
+document.getElementById('thumbTogBtn').onclick = () => { thumbBoxesOn = !thumbBoxesOn; applyThumbBoxState(); };
+
+function buildThumbBoxes(imgObj, cardEl) {
+  const faces = imgObj.faces || [];
+  if(!faces.length) return;
+  const img = cardEl.querySelector('img');
+  const doPlace = () => {
+    if(!img.naturalWidth || !img.clientWidth) return;
+    const iw = img.clientWidth, ih = img.clientHeight;
+    const scale = Math.min(iw/img.naturalWidth, ih/img.naturalHeight);
+    const rw = img.naturalWidth*scale, rh = img.naturalHeight*scale;
+    const ox = (iw-rw)/2, oy = (ih-rh)/2;
+    const wrapRect = cardEl.parentElement.getBoundingClientRect();
+    const imgRect  = img.getBoundingClientRect();
+    const relTop   = imgRect.top  - wrapRect.top;
+    const relLeft  = imgRect.left - wrapRect.left;
+    faces.forEach((f, fi) => {
+      let box = cardEl.parentElement.querySelector(`.thumb-fbox[data-fi="${fi}"]`);
+      if(!box){ box = document.createElement('div'); box.className='thumb-fbox'; box.dataset.fi=fi; box.dataset.name=f.name||''; cardEl.parentElement.appendChild(box); }
+      box.style.left   = (relLeft + ox + f.x1*scale)+'px';
+      box.style.top    = (relTop  + oy + f.y1*scale)+'px';
+      box.style.width  = Math.max(2,(f.x2-f.x1)*scale)+'px';
+      box.style.height = Math.max(2,(f.y2-f.y1)*scale)+'px';
+    });
+  };
+  if(img.complete && img.naturalWidth > 0) doPlace();
+  else img.addEventListener('load', doPlace, {once:true});
+  try{ new ResizeObserver(doPlace).observe(img); }catch(e){}
+}
+
+function batch(){
+  const g=document.getElementById('grid');
+  all.slice(offset,offset+PAGE).forEach((imgObj,rel)=>{
+    const i=offset+rel;
+    const wrap = document.createElement('div');
+    wrap.className = 'img-wrap' + (thumbBoxesOn ? ' boxes-on' : '');
+    wrap.innerHTML = buildHoverPop(imgObj);
+    const b=document.createElement('button');
+    b.className='img-card';
+    b.innerHTML=`<img loading="lazy" src="${imgUrl(imgObj.id)}" onerror="imgRetry(this)" alt="${esc(imgObj.original_name||'')}">
+      <div class="img-label">${esc(imgObj.original_name||'Photo')}</div>`;
+    b.onclick=()=>showPhoto(i);
+    wrap.addEventListener('mouseenter',()=>updateSide(imgObj));
+    wrap.insertBefore(b, wrap.firstChild);
+    g.appendChild(wrap);
+    buildThumbBoxes(imgObj, b);
+  });
+  offset=Math.min(offset+PAGE,all.length);
+  document.getElementById('moreBtn').classList.toggle('hidden',offset>=all.length);
+}
+
+document.getElementById('moreBtn').onclick=batch;
+
+(async()=>{
+  try{
+    const r=await fetch('/api/images'); const d=await r.json();
+    if(!d.ok) throw Error(d.error);
+    all=d.data;
+    document.getElementById('subtitle').textContent=all.length+' photos in the archive';
+    document.getElementById('skel').classList.add('hidden');
+    document.getElementById('mainLayout').classList.remove('hidden');
+    batch();
+  }catch(e){
+    document.getElementById('skel').classList.add('hidden');
+    document.getElementById('subtitle').textContent='Failed: '+e.message;
+  }
+})();
+</script></body></html>

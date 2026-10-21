@@ -1,0 +1,71 @@
+<!doctype html><html lang="en"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>People - IJANT Gallery</title>
+<link rel="stylesheet" href="/shared.css">
+<style>
+.grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(190px,1fr)); gap:18px; }
+.skel-grid { grid-template-columns:repeat(auto-fill,minmax(190px,1fr)); }
+.person { border:1px solid var(--line); border-radius:16px; background:var(--card); overflow:hidden;
+  color:inherit; cursor:pointer; transition:transform .15s,border-color .15s,box-shadow .15s; display:block; }
+.person:hover { transform:translateY(-3px); border-color:var(--accent); box-shadow:0 8px 24px rgba(0,0,0,.5); }
+.person img { width:100%; aspect-ratio:4/5; object-fit:cover; display:block; background:#1c222e; }
+.person .nophoto { aspect-ratio:4/5; display:grid; place-items:center; color:var(--muted); font-size:40px; background:#12161f; }
+.person .meta { padding:13px; }
+.person strong { display:block; font-size:16px; margin-bottom:3px; }
+.search-row { display:flex; gap:10px; margin-bottom:22px; flex-wrap:wrap; }
+.search-row input { flex:1; min-width:200px; background:var(--card); border:1px solid var(--line);
+  border-radius:10px; color:#f5f7fb; padding:9px 14px; font-size:14px; outline:none; transition:border-color .15s; }
+.search-row input:focus { border-color:var(--accent); }
+@media(max-width:600px){ .grid,.skel-grid{ grid-template-columns:repeat(2,1fr); gap:10px; } }
+</style></head><body>
+<header><div class="header-bar">
+  <a href="/" class="logo">IJANT <span>Gallery</span></a>
+  <nav>
+    <a class="nav-link" href="/">Home</a>
+    <a class="nav-link active" href="/people">People</a>
+    <a class="nav-link" href="/images">Images</a>
+  </nav>
+</div></header>
+<main>
+<div class="page-hdr"><h1>People</h1><p id="subtitle"><small>(let ijads pink computing unit process)</small></p></div>
+<div class="search-row"><input type="search" id="q" placeholder="Search by name..." autocomplete="off"></div>
+<div id="skel" class="skel-grid" style="display:grid"><div class="skel"><div class="skel-img" style="aspect-ratio:4/5"></div><div style="padding:11px"><div style="height:14px;background:#1c222e;border-radius:6px;animation:pulse 1.5s infinite;margin-bottom:7px"></div><div style="height:12px;width:55%;background:#1c222e;border-radius:6px;animation:pulse 1.5s infinite"></div></div></div><div class="skel"><div class="skel-img" style="aspect-ratio:4/5"></div><div style="padding:11px"><div style="height:14px;background:#1c222e;border-radius:6px;animation:pulse 1.5s infinite;margin-bottom:7px"></div><div style="height:12px;width:55%;background:#1c222e;border-radius:6px;animation:pulse 1.5s infinite"></div></div></div><div class="skel"><div class="skel-img" style="aspect-ratio:4/5"></div><div style="padding:11px"><div style="height:14px;background:#1c222e;border-radius:6px;animation:pulse 1.5s infinite;margin-bottom:7px"></div><div style="height:12px;width:55%;background:#1c222e;border-radius:6px;animation:pulse 1.5s infinite"></div></div></div><div class="skel"><div class="skel-img" style="aspect-ratio:4/5"></div><div style="padding:11px"><div style="height:14px;background:#1c222e;border-radius:6px;animation:pulse 1.5s infinite;margin-bottom:7px"></div><div style="height:12px;width:55%;background:#1c222e;border-radius:6px;animation:pulse 1.5s infinite"></div></div></div><div class="skel"><div class="skel-img" style="aspect-ratio:4/5"></div><div style="padding:11px"><div style="height:14px;background:#1c222e;border-radius:6px;animation:pulse 1.5s infinite;margin-bottom:7px"></div><div style="height:12px;width:55%;background:#1c222e;border-radius:6px;animation:pulse 1.5s infinite"></div></div></div><div class="skel"><div class="skel-img" style="aspect-ratio:4/5"></div><div style="padding:11px"><div style="height:14px;background:#1c222e;border-radius:6px;animation:pulse 1.5s infinite;margin-bottom:7px"></div><div style="height:12px;width:55%;background:#1c222e;border-radius:6px;animation:pulse 1.5s infinite"></div></div></div><div class="skel"><div class="skel-img" style="aspect-ratio:4/5"></div><div style="padding:11px"><div style="height:14px;background:#1c222e;border-radius:6px;animation:pulse 1.5s infinite;margin-bottom:7px"></div><div style="height:12px;width:55%;background:#1c222e;border-radius:6px;animation:pulse 1.5s infinite"></div></div></div><div class="skel"><div class="skel-img" style="aspect-ratio:4/5"></div><div style="padding:11px"><div style="height:14px;background:#1c222e;border-radius:6px;animation:pulse 1.5s infinite;margin-bottom:7px"></div><div style="height:12px;width:55%;background:#1c222e;border-radius:6px;animation:pulse 1.5s infinite"></div></div></div><div class="skel"><div class="skel-img" style="aspect-ratio:4/5"></div><div style="padding:11px"><div style="height:14px;background:#1c222e;border-radius:6px;animation:pulse 1.5s infinite;margin-bottom:7px"></div><div style="height:12px;width:55%;background:#1c222e;border-radius:6px;animation:pulse 1.5s infinite"></div></div></div><div class="skel"><div class="skel-img" style="aspect-ratio:4/5"></div><div style="padding:11px"><div style="height:14px;background:#1c222e;border-radius:6px;animation:pulse 1.5s infinite;margin-bottom:7px"></div><div style="height:12px;width:55%;background:#1c222e;border-radius:6px;animation:pulse 1.5s infinite"></div></div></div><div class="skel"><div class="skel-img" style="aspect-ratio:4/5"></div><div style="padding:11px"><div style="height:14px;background:#1c222e;border-radius:6px;animation:pulse 1.5s infinite;margin-bottom:7px"></div><div style="height:12px;width:55%;background:#1c222e;border-radius:6px;animation:pulse 1.5s infinite"></div></div></div><div class="skel"><div class="skel-img" style="aspect-ratio:4/5"></div><div style="padding:11px"><div style="height:14px;background:#1c222e;border-radius:6px;animation:pulse 1.5s infinite;margin-bottom:7px"></div><div style="height:12px;width:55%;background:#1c222e;border-radius:6px;animation:pulse 1.5s infinite"></div></div></div></div>
+<div id="grid" class="grid hidden"></div>
+<div id="empty" class="empty hidden">No people found.</div>
+</main>
+<script src="/shared.js"></script>
+<script>
+let all=[];
+function render(list){
+  const g=document.getElementById('grid');
+  const em=document.getElementById('empty');
+  if(!list.length){ g.classList.add('hidden'); em.classList.remove('hidden'); return; }
+  em.classList.add('hidden');
+  g.innerHTML=list.map(p=>`
+    <a class="person" href="/people/${p.id}">
+      ${p.cover_photo_id
+        ? `<img loading="lazy" src="${imgUrl(p.cover_photo_id)}" onerror="imgRetry(this)" alt="${esc(p.name)}">`
+        : `<div class="nophoto">?</div>`
+      }
+      <div class="meta"><strong>${esc(p.name)}</strong><span class="muted">${p.photo_count} photo${p.photo_count===1?'':'s'}</span></div>
+    </a>`).join('');
+  g.classList.remove('hidden');
+}
+document.getElementById('q').addEventListener('input',e=>{
+  const q=e.target.value.trim().toLowerCase();
+  render(q?all.filter(p=>p.name.toLowerCase().includes(q)):all);
+});
+(async()=>{
+  try{
+    const r=await fetch('/api/public/people');const d=await r.json();
+    if(!d.ok) throw Error(d.error||'Error');
+    all=d.data;
+    document.getElementById('skel').classList.add('hidden');
+    document.getElementById('subtitle').textContent=all.length+' people in the archive';
+    render(all);
+  }catch(e){
+    document.getElementById('skel').classList.add('hidden');
+    document.getElementById('subtitle').textContent='Failed: '+e.message;
+  }
+})();
+</script></body></html>

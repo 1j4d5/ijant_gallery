@@ -1,0 +1,215 @@
+<!doctype html><html lang="en"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Person - IJANT Gallery</title>
+<link rel="stylesheet" href="/shared.css">
+<style>
+.back-bar { display:flex; align-items:center; gap:14px; margin-bottom:26px; }
+.back-bar h1 { font-size:clamp(22px,3.5vw,32px); margin:0; }
+.photos { display:grid; grid-template-columns:repeat(auto-fill,minmax(180px,1fr)); gap:12px; }
+.skel-grid { grid-template-columns:repeat(auto-fill,minmax(180px,1fr)); gap:12px; }
+.photo-btn { padding:0; border:1px solid var(--line); background:#161b25; border-radius:12px;
+  overflow:visible; cursor:zoom-in; transition:transform .15s,border-color .15s; display:block; width:100%; }
+.photo-btn:hover { transform:translateY(-2px); border-color:var(--accent); }
+.frame { position:relative; display:block; width:100%; aspect-ratio:1; overflow:hidden; border-radius:11px; }
+.frame img { width:100%; height:100%; object-fit:contain; display:block; background:#10141d; }
+
+/* Face Box HUD */
+.face-box {
+  position:absolute; border:2.5px solid var(--accent);
+  box-shadow:0 0 0 1px rgba(0,0,0,.7),0 0 12px rgba(169,243,107,.55);
+  border-radius:3px; pointer-events:none; z-index:5; display:none;
+}
+.face-box.placed { display:block; }
+
+/* Lightbox */
+#lightbox { position:fixed; inset:0; background:rgba(3,4,7,.95); backdrop-filter:blur(10px);
+  z-index:100; display:flex; align-items:center; justify-content:center; padding:70px 70px 55px; user-select:none; }
+#lightbox.hidden { display:none !important; }
+#viewer { position:relative; display:inline-block; max-width:100%; max-height:100%; line-height:0; }
+#viewer img { max-width:100%; max-height:calc(100vh - 130px); object-fit:contain; display:block;
+  border-radius:6px; box-shadow:0 12px 40px rgba(0,0,0,.8); }
+#viewer .face-box {
+  position:absolute; border:3px solid var(--accent);
+  box-shadow:0 0 0 1.5px rgba(0,0,0,.85),0 0 18px rgba(169,243,107,.7);
+  border-radius:4px; pointer-events:auto; cursor:default; z-index:50; display:none;
+}
+#viewer .face-box.placed { display:block; }
+#viewer .face-box::after { content:attr(data-name); position:absolute; bottom:calc(100% + 4px); left:0;
+  background:rgba(10,12,16,.9); color:var(--accent); font-size:11px; font-weight:600;
+  padding:2px 8px; border-radius:4px; white-space:nowrap; border:1px solid var(--line);
+  opacity:0; transition:opacity .15s; pointer-events:none; }
+#viewer .face-box:hover::after { opacity:1; }
+#lightbox.boxes-off .face-box, .boxes-off .face-box { display:none !important; }
+.lb-ctrl { position:absolute; border:1px solid var(--line); background:rgba(23,27,36,.9);
+  color:white; border-radius:10px; padding:10px 16px; cursor:pointer; font-size:14px;
+  font-weight:500; transition:all .15s; z-index:110; }
+.lb-ctrl:hover { border-color:var(--accent); color:var(--accent); }
+#lbClose { top:14px; right:14px; }
+#lbToggle { top:14px; right:122px; }
+#lbPrev { left:14px; top:50%; transform:translateY(-50%); font-size:20px; padding:14px 18px; }
+#lbNext { right:14px; top:50%; transform:translateY(-50%); font-size:20px; padding:14px 18px; }
+#lbCounter { position:absolute; bottom:14px; left:50%; transform:translateX(-50%); color:#d3d7e0;
+  font-size:13px; background:rgba(23,27,36,.7); padding:5px 14px; border-radius:20px;
+  border:1px solid var(--line); white-space:nowrap; }
+@media(max-width:500px){
+  .photos,.skel-grid{ grid-template-columns:repeat(2,1fr); gap:7px; }
+}
+@media(max-width:600px){
+  #lightbox{ padding:54px 0 0; flex-direction:column; }
+  #viewer{ max-width:100vw; max-height:calc(100svh - 90px); width:100%; }
+  #viewer img{ max-height:calc(100svh - 90px); border-radius:0; }
+  #lbPrev{ left:0; padding:18px 14px; border-radius:0 10px 10px 0; }
+  #lbNext{ right:0; padding:18px 14px; border-radius:10px 0 0 10px; }
+  #lbToggle{ top:10px; right:84px; padding:7px 10px; font-size:12px; }
+  #lbClose{ top:10px; right:8px; padding:7px 10px; font-size:12px; }
+  .back-bar{ flex-wrap:wrap; gap:8px; margin-bottom:16px; }
+}
+</style></head><body>
+<header><div class="header-bar">
+  <a href="/" class="logo">IJANT <span>Gallery</span></a>
+  <nav>
+    <a class="nav-link" href="/">Home</a>
+    <a class="nav-link active" href="/people">People</a>
+    <a class="nav-link" href="/images">Images</a>
+  </nav>
+</div></header>
+<main>
+<div class="back-bar">
+  <a class="btn" href="/people">&#8592; All People</a>
+  <div><h1 id="personName">Loading...</h1><div class="muted" id="photoCount"></div></div>
+</div>
+<div id="skel" class="skel-grid" style="display:grid"><div class="skel"><div class="skel-img" style="aspect-ratio:1"></div></div><div class="skel"><div class="skel-img" style="aspect-ratio:1"></div></div><div class="skel"><div class="skel-img" style="aspect-ratio:1"></div></div><div class="skel"><div class="skel-img" style="aspect-ratio:1"></div></div><div class="skel"><div class="skel-img" style="aspect-ratio:1"></div></div><div class="skel"><div class="skel-img" style="aspect-ratio:1"></div></div><div class="skel"><div class="skel-img" style="aspect-ratio:1"></div></div><div class="skel"><div class="skel-img" style="aspect-ratio:1"></div></div><div class="skel"><div class="skel-img" style="aspect-ratio:1"></div></div><div class="skel"><div class="skel-img" style="aspect-ratio:1"></div></div><div class="skel"><div class="skel-img" style="aspect-ratio:1"></div></div><div class="skel"><div class="skel-img" style="aspect-ratio:1"></div></div></div>
+<div id="photoGrid" class="photos hidden"></div>
+<div id="empty" class="empty hidden">No photos for this person.</div>
+</main>
+
+<div id="lightbox" class="hidden" role="dialog" aria-modal="true">
+  <button class="lb-ctrl" id="lbClose">&#10005; Close</button>
+  <button class="lb-ctrl" id="lbToggle">Hide face boxes</button>
+  <button class="lb-ctrl" id="lbPrev">&#8592;</button>
+  <div id="viewer"></div>
+  <button class="lb-ctrl" id="lbNext">&#8594;</button>
+  <div id="lbCounter"></div>
+</div>
+
+<script src="/shared.js"></script>
+<script>
+const PID = Number(location.pathname.split('/').pop());
+let photos=[], idx=0, personName='';
+
+// Call AFTER the container is visible (not display:none) so dimensions exist.
+function positionBoxes(container, img) {
+  if(!container || !img) return;
+  if(!img.naturalWidth || !img.naturalHeight) return;
+  const iw = img.clientWidth, ih = img.clientHeight;
+  if(!iw || !ih) { requestAnimationFrame(()=>positionBoxes(container,img)); return; }
+  const scale = Math.min(iw/img.naturalWidth, ih/img.naturalHeight);
+  const rw = img.naturalWidth*scale, rh = img.naturalHeight*scale;
+  const ox = (iw-rw)/2, oy = (ih-rh)/2;
+  container.querySelectorAll('.face-box').forEach(b=>{
+    const x1=parseFloat(b.dataset.x1)||0, y1=parseFloat(b.dataset.y1)||0;
+    const x2=parseFloat(b.dataset.x2)||0, y2=parseFloat(b.dataset.y2)||0;
+    b.style.left   = (ox + x1*scale)+'px';
+    b.style.top    = (oy + y1*scale)+'px';
+    b.style.width  = Math.max(2,(x2-x1)*scale)+'px';
+    b.style.height = Math.max(2,(y2-y1)*scale)+'px';
+    b.classList.add('placed');
+  });
+}
+
+let _ro = null;
+function showPhoto(i) {
+  if(!photos.length) return;
+  idx = ((i%photos.length)+photos.length)%photos.length;
+  const ph = photos[idx];
+  const boxes = (ph.faces||[]).map(f=>
+    `<div class="face-box" data-x1="${f.x1}" data-y1="${f.y1}" data-x2="${f.x2}" data-y2="${f.y2}" data-name="${esc(personName)}"></div>`
+  ).join('');
+  document.getElementById('viewer').innerHTML = `<img id="lbImg" alt="Photo" src="${imgUrl(ph.id)}" onerror="imgRetry(this)">${boxes}`;
+
+  // Show lightbox FIRST so dimensions are available
+  document.getElementById('lightbox').classList.remove('hidden');
+  document.body.style.overflow='hidden';
+
+  const img = document.getElementById('lbImg');
+  const viewer = document.getElementById('viewer');
+  if(_ro){ try{_ro.disconnect();}catch(e){} _ro=null; }
+  const place = () => {
+    positionBoxes(viewer, img);
+    requestAnimationFrame(()=>positionBoxes(viewer, img));
+  };
+  if(img.complete && img.naturalWidth>0){ place(); }
+  else { img.addEventListener('load', place, {once:true}); }
+  try{
+    _ro = new ResizeObserver(()=>positionBoxes(viewer,img));
+    _ro.observe(img);
+  }catch(e){}
+  document.getElementById('lbCounter').textContent = (idx+1)+' / '+photos.length;
+  const lb = document.getElementById('lightbox');
+  document.getElementById('lbToggle').textContent = lb.classList.contains('boxes-off')?'Show face boxes':'Hide face boxes';
+}
+
+function closePhoto() {
+  if(_ro){try{_ro.disconnect();}catch(e){} _ro=null;}
+  document.getElementById('lightbox').classList.add('hidden');
+  document.getElementById('viewer').innerHTML='';
+  document.body.style.overflow='';
+}
+
+document.getElementById('lbClose').onclick=closePhoto;
+document.getElementById('lbPrev').onclick=()=>showPhoto(idx-1);
+document.getElementById('lbNext').onclick=()=>showPhoto(idx+1);
+document.getElementById('lbToggle').onclick=()=>{
+  const lb=document.getElementById('lightbox');
+  const off=lb.classList.toggle('boxes-off');
+  document.getElementById('lbToggle').textContent=off?'Show face boxes':'Hide face boxes';
+};
+document.getElementById('lightbox').onclick=e=>{ if(e.target===document.getElementById('lightbox')) closePhoto(); };
+document.addEventListener('keydown',e=>{
+  if(document.getElementById('lightbox').classList.contains('hidden')) return;
+  if(e.key==='Escape') closePhoto();
+  if(e.key==='ArrowLeft') showPhoto(idx-1);
+  if(e.key==='ArrowRight') showPhoto(idx+1);
+});
+window.addEventListener('resize',()=>{
+  if(!document.getElementById('lightbox').classList.contains('hidden')){
+    const img=document.getElementById('lbImg');
+    positionBoxes(document.getElementById('viewer'),img);
+  }
+});
+
+(async()=>{
+  try{
+    const r=await fetch('/api/public/people/'+PID);
+    const d=await r.json();
+    if(!d.ok) throw Error(d.error||'Not found');
+    const p=d.data;
+    personName=p.name; photos=p.photos||[];
+    document.getElementById('personName').textContent=p.name;
+    document.getElementById('photoCount').textContent=photos.length+' photo'+(photos.length===1?'':'s');
+    document.title=p.name+' - IJANT Gallery';
+    document.getElementById('skel').classList.add('hidden');
+    if(!photos.length){ document.getElementById('empty').classList.remove('hidden'); return; }
+    const grid=document.getElementById('photoGrid');
+    grid.innerHTML=photos.map((ph,i)=>{
+      const bx=(ph.faces||[]).map(f=>
+        `<div class="face-box" data-x1="${f.x1}" data-y1="${f.y1}" data-x2="${f.x2}" data-y2="${f.y2}"></div>`
+      ).join('');
+      return `<button class="photo-btn" data-i="${i}"><span class="frame"><img loading="lazy" src="${imgUrl(ph.id)}" onerror="imgRetry(this)" alt="Photo ${i+1}">${bx}</span></button>`;
+    }).join('');
+    grid.classList.remove('hidden');
+    grid.querySelectorAll('.photo-btn').forEach(btn=>{
+      btn.onclick=()=>showPhoto(Number(btn.dataset.i));
+      const frame=btn.querySelector('.frame');
+      const img=frame.querySelector('img');
+      const place=()=>positionBoxes(frame,img);
+      if(img.complete&&img.naturalWidth>0) place();
+      else img.addEventListener('load',place,{once:true});
+    });
+  }catch(e){
+    document.getElementById('skel').classList.add('hidden');
+    document.getElementById('personName').textContent='Error';
+    document.getElementById('photoCount').textContent=e.message;
+  }
+})();
+</script></body></html>
