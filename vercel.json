@@ -1,63 +1,32 @@
 {
-  "version": 2,
-  "builds": [
+  "rewrites": [
     {
-      "src": "ijant-gallery/api/**/*.js",
-      "use": "@vercel/node"
+      "source": "/people",
+      "destination": "/people.html"
     },
     {
-      "src": "ijant-gallery/public/**",
-      "use": "@vercel/static"
-    }
-  ],
-  "routes": [
-    {
-      "src": "/",
-      "dest": "/ijant-gallery/public/index.html"
+      "source": "/people/:id(\\d+)",
+      "destination": "/person.html"
     },
     {
-      "src": "/people",
-      "dest": "/ijant-gallery/public/people.html"
+      "source": "/images",
+      "destination": "/images.html"
     },
     {
-      "src": "/people/(\\d+)",
-      "dest": "/ijant-gallery/public/person.html"
+      "source": "/api/public/people",
+      "destination": "/api/people"
     },
     {
-      "src": "/images",
-      "dest": "/ijant-gallery/public/images.html"
+      "source": "/api/public/people/:id",
+      "destination": "/api/people/:id"
     },
     {
-      "src": "/shared.css",
-      "dest": "/ijant-gallery/public/shared.css"
+      "source": "/photo/:id",
+      "destination": "/api/photo/:id"
     },
     {
-      "src": "/shared.js",
-      "dest": "/ijant-gallery/public/shared.js"
-    },
-    {
-      "src": "/api/stats",
-      "dest": "/ijant-gallery/api/stats.js"
-    },
-    {
-      "src": "/api/refresh",
-      "dest": "/ijant-gallery/api/refresh.js"
-    },
-    {
-      "src": "/api/images",
-      "dest": "/ijant-gallery/api/images.js"
-    },
-    {
-      "src": "/api/(?:public/)?people",
-      "dest": "/ijant-gallery/api/people/index.js"
-    },
-    {
-      "src": "/api/(?:public/)?people/(\\d+)",
-      "dest": "/ijant-gallery/api/people/[id].js?id=$1"
-    },
-    {
-      "src": "/(?:public-)?photo/(\\d+)",
-      "dest": "/ijant-gallery/api/photo/[id].js?id=$1"
+      "source": "/public-photo/:id",
+      "destination": "/api/photo/:id"
     }
   ]
 }
