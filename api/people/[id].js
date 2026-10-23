@@ -1,4 +1,4 @@
-import { api, query, imageKeyCache, HttpError } from '../../lib/db.js';
+import { api, query, imageKeyCache, HttpError, getDims } from '../../lib/db.js';
 
 export default api(async (req) => {
   const pid = parseInt(req.query.id, 10);
@@ -7,7 +7,7 @@ export default api(async (req) => {
   const [person] = await query('SELECT person_id AS id, name FROM people WHERE person_id = $1', [pid]);
   if (!person) throw new HttpError(404, 'Person not found');
 
-  const [imageRows, boxRows] = await Promise.all([
+  const [imageRows, boxRows, dims] = await Promise.all([
     query(`
       SELECT i.image_id AS id, i.original_name, i.object_key
       FROM images i
@@ -21,6 +21,7 @@ export default api(async (req) => {
       WHERE person_id = $1
       ORDER BY id
     `, [pid]),
+    getDims(),
   ]);
 
   for (const r of imageRows) if (r.object_key) imageKeyCache.set(r.id, r.object_key);
@@ -41,6 +42,8 @@ export default api(async (req) => {
     photos: imageRows.map((r) => ({
       id: r.id,
       original_name: r.original_name || '',
+      w: dims.get(r.object_key)?.w ?? null,
+      h: dims.get(r.object_key)?.h ?? null,
       faces: byImage.get(r.id) || [],
     })),
   };

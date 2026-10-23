@@ -31,3 +31,10 @@ function imgRetry(img) {
     img.replaceWith(ph);
   }
 }
+
+// Original pixel size the face boxes were computed on. Comes from the Ijus info API
+// (data-ow/data-oh); falls back to the loaded image's natural size.
+function origSize(img){
+  const w=parseInt(img.dataset.ow,10), h=parseInt(img.dataset.oh,10);
+  return (w>0&&h>0)?{w,h}:{w:img.naturalWidth,h:img.naturalHeight};
+}

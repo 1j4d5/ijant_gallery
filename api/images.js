@@ -1,9 +1,9 @@
-import { api, query, imageKeyCache } from '../lib/db.js';
+import { api, query, imageKeyCache, getDims } from '../lib/db.js';
 
 const num = (v) => (v === null || v === undefined ? null : Number(v));
 
 export default api(async () => {
-  const [rows, boxRows, peopleRows] = await Promise.all([
+  const [rows, boxRows, peopleRows, dims] = await Promise.all([
     query('SELECT image_id AS id, original_name, object_key FROM images ORDER BY image_id'),
     query(`
       SELECT fb.image_id, fb.x1, fb.y1, fb.x2, fb.y2, p.name
@@ -29,7 +29,10 @@ export default api(async () => {
        AND fb.image_id = cov.cover_photo_id
       ORDER BY pi.image_id, p.name
     `),
+    getDims(),
   ]);
+  const dimsById = new Map();
+  for (const r of rows) { const d = dims.get(r.object_key); if (d) dimsById.set(r.id, d); }
 
   for (const r of rows) if (r.object_key) imageKeyCache.set(r.id, r.object_key);
 
@@ -46,12 +49,16 @@ export default api(async () => {
       id: r.id, name: r.name, cover_photo_id: r.cover_photo_id,
       face_x1: num(r.face_x1), face_y1: num(r.face_y1),
       face_x2: num(r.face_x2), face_y2: num(r.face_y2),
+      cover_w: dimsById.get(r.cover_photo_id)?.w ?? null,
+      cover_h: dimsById.get(r.cover_photo_id)?.h ?? null,
     });
   }
 
   return rows.map((r) => ({
     id: r.id,
     original_name: r.original_name || '',
+    w: dimsById.get(r.id)?.w ?? null,
+    h: dimsById.get(r.id)?.h ?? null,
     faces: boxes.get(r.id) || [],
     people: people.get(r.id) || [],
   }));

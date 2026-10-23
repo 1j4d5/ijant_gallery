@@ -103,8 +103,9 @@ function positionBoxes(container, img) {
   if(!img.naturalWidth || !img.naturalHeight) return;
   const iw = img.clientWidth, ih = img.clientHeight;
   if(!iw || !ih) { requestAnimationFrame(()=>positionBoxes(container,img)); return; }
-  const scale = Math.min(iw/img.naturalWidth, ih/img.naturalHeight);
-  const rw = img.naturalWidth*scale, rh = img.naturalHeight*scale;
+  const o = origSize(img);
+  const scale = Math.min(iw/o.w, ih/o.h);
+  const rw = o.w*scale, rh = o.h*scale;
   const ox = (iw-rw)/2, oy = (ih-rh)/2;
   container.querySelectorAll('.face-box').forEach(b=>{
     const x1=parseFloat(b.dataset.x1)||0, y1=parseFloat(b.dataset.y1)||0;
@@ -125,7 +126,7 @@ function showPhoto(i) {
   const boxes = (ph.faces||[]).map(f=>
     `<div class="face-box" data-x1="${f.x1}" data-y1="${f.y1}" data-x2="${f.x2}" data-y2="${f.y2}" data-name="${esc(personName)}"></div>`
   ).join('');
-  document.getElementById('viewer').innerHTML = `<img id="lbImg" alt="Photo" src="${imgUrl(ph.id)}" onerror="imgRetry(this)">${boxes}`;
+  document.getElementById('viewer').innerHTML = `<img id="lbImg" alt="Photo" src="${imgUrl(ph.id)}" data-ow="${ph.w||''}" data-oh="${ph.h||''}" onerror="imgRetry(this)">${boxes}`;
 
   // Show lightbox FIRST so dimensions are available
   document.getElementById('lightbox').classList.remove('hidden');
@@ -195,7 +196,7 @@ window.addEventListener('resize',()=>{
       const bx=(ph.faces||[]).map(f=>
         `<div class="face-box" data-x1="${f.x1}" data-y1="${f.y1}" data-x2="${f.x2}" data-y2="${f.y2}"></div>`
       ).join('');
-      return `<button class="photo-btn" data-i="${i}"><span class="frame"><img loading="lazy" src="${imgUrl(ph.id)}" onerror="imgRetry(this)" alt="Photo ${i+1}">${bx}</span></button>`;
+      return `<button class="photo-btn" data-i="${i}"><span class="frame"><img loading="lazy" src="${imgUrl(ph.id)}" data-ow="${ph.w||''}" data-oh="${ph.h||''}" onerror="imgRetry(this)" alt="Photo ${i+1}">${bx}</span></button>`;
     }).join('');
     grid.classList.remove('hidden');
     grid.querySelectorAll('.photo-btn').forEach(btn=>{
